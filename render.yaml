@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: atmosfit-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FIREBASE_DB_URL
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
