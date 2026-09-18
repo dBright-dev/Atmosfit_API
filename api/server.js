@@ -4,17 +4,17 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const {initializeApp, cert, getApps} = require('firebase-admin/app')
-const {getFirestore} = require('firebase-admin/firestore')
-const {getDatabase} = require('firebase-admin/database')
-const {getAuth} = require('firebase-admin/auth')
+// --- MODULAR FIREBASE IMPORTS ---
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
+const { getDatabase } = require('firebase-admin/database');
+const { getAuth } = require('firebase-admin/auth');
 
 // --- FIREBASE CREDENTIALS SETUP ---
 let serviceAccount;
 
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   try {
-    // Decode Base64 string back to JSON (for production/Render)
     const decodedString = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64').toString('utf8');
     serviceAccount = JSON.parse(decodedString);
     console.log("✅ Loaded Firebase credentials from Environment variable.");
@@ -24,7 +24,6 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     process.exit(1);
   }
 } else {
-  // Fallback for Local Development (reads the physical JSON file)
   try {
     serviceAccount = require('./config/serviceAccountKey.json');
     console.log("⚠️ Loaded Firebase credentials from local JSON file.");
@@ -34,20 +33,19 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   }
 }
 
-// --- INITIALIZE FIREBASE ADMIN (Namespaced API) ---
+// --- INITIALIZE FIREBASE APP (modular) ---
 let firebaseApp;
-if(getApps().length === 0) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount), 
+if (getApps().length === 0) {
+  firebaseApp = initializeApp({
+    credential: cert(serviceAccount),
     databaseURL: process.env.FIREBASE_DB_URL,
   });
-  console.log("Firebase Admin initialized.");
+  console.log("🔥 Firebase Admin initialized.");
 } else {
   firebaseApp = getApps()[0];
 }
 
-
-// Initialize database instances using the namespaced API
+// --- INITIALIZE SERVICES ---
 const dbFirestore = getFirestore(firebaseApp);
 const dbRealtime = getDatabase(firebaseApp);
 const auth = getAuth(firebaseApp);
@@ -89,7 +87,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
 });
 
-module.exports = app;
+module.exports = { app, auth, dbFirestore, dbRealtime };
 
 /*
 Reference List
