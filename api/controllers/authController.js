@@ -1,6 +1,6 @@
 // Modular Auth API
 const { getAuth } = require('firebase-admin/auth');
-const auth = getAuth();
+
 
 /**
  * Registers a new user with email and password.
@@ -10,6 +10,7 @@ const auth = getAuth();
  * @return {Promise<Object>} The created user record and a custom token.
  */
 async function registerUser(email, password, displayName) {
+  const auth = getAuth();
   try {
     const userRecord = await auth.createUser({
       email,
@@ -42,6 +43,7 @@ async function registerUser(email, password, displayName) {
 }
 
 async function loginUser(idToken) {
+  const auth = getAuth();
   try {
     const decodedToken = await auth.verifyIdToken(idToken);
 
@@ -67,6 +69,7 @@ async function loginUser(idToken) {
 }
 
 async function getUserProfile(uid) {
+  const auth = getAuth();
   try {
     const userRecord = await auth.getUser(uid);
 
@@ -87,6 +90,7 @@ async function getUserProfile(uid) {
 }
 
 async function logoutUser(uid) {
+  const auth = getAuth();
   await auth.revokeRefreshTokens(uid);
 }
 

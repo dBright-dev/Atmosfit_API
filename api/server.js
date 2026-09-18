@@ -3,7 +3,11 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const admin = require('firebase-admin');
+
+const {initializeApp, cert, getApps} = require('firebase-admin/app')
+const {getFirestore} = require('firebase-admin/firestore')
+const {getDatabase} = require('firebase-admin/database')
+const {getAuth} = require('firebase-admin/auth')
 
 // --- FIREBASE CREDENTIALS SETUP ---
 let serviceAccount;
@@ -31,14 +35,22 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 }
 
 // --- INITIALIZE FIREBASE ADMIN (Namespaced API) ---
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount), 
-  databaseURL: process.env.FIREBASE_DB_URL,
-});
+let firebaseApp;
+if(getApps().length === 0) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount), 
+    databaseURL: process.env.FIREBASE_DB_URL,
+  });
+  console.log("Firebase Admin initialized.");
+} else {
+  firebaseApp = getApps()[0];
+}
+
 
 // Initialize database instances using the namespaced API
-const dbFirestore = admin.firestore();
-const dbRealtime = admin.database();
+const dbFirestore = getFirestore(firebaseApp);
+const dbRealtime = getDatabase(firebaseApp);
+const auth = getAuth(firebaseApp);
 
 // --- EXPRESS APP SETUP ---
 const app = express();
