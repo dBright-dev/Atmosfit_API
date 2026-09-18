@@ -4,6 +4,8 @@
   "description": "",
   "main": "sever.js",
   "scripts": {
+    "start": "node api/server.js",
+    "install:api": "cd api && npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
