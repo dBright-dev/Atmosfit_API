@@ -14,13 +14,37 @@ const { getAuth } = require('firebase-admin/auth');
 let serviceAccount;
 
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-  try {
-    const decodedString = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64').toString('utf8');
-    serviceAccount = JSON.parse(decodedString);
+ try {
+    const rawValue = process.env.FIREBASE_SERVICE_ACCOUNT.trim();
+    let jsonString;
+
+    // Detect the format: if it starts with "{" it's raw JSON.
+    // Otherwise, assume it's Base64-encoded.
+    // Reference: Buffer.from() - https://nodejs.org/api/buffer.html#static-method-bufferfromstring-encoding
+    if (rawValue.startsWith('{')) {
+      jsonString = rawValue;
+      console.log("🔍 Detected raw JSON credentials.");
+    } else {
+      jsonString = Buffer.from(rawValue, 'base64').toString('utf8');
+      console.log("🔍 Detected Base64 credentials.");
+    }
+
+    // Parse the JSON string.
+    // Reference: JSON.parse() - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse
+    serviceAccount = JSON.parse(jsonString);
+
+    // Firebase private keys sometimes come through with escaped newlines.
+    // We replace the literal "\n" with real newlines.
+    // Reference: Replace all - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replaceAll
+    if (serviceAccount.private_key) {
+      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    }
+
     console.log("✅ Loaded Firebase credentials from Environment variable.");
   } catch (error) {
     console.error("❌ Failed to parse FIREBASE_SERVICE_ACCOUNT.");
-    console.error(error.message);
+    console.error("Error details:", error.message);
+    console.error("First 50 chars of env var:", process.env.FIREBASE_SERVICE_ACCOUNT?.substring(0, 50));
     process.exit(1);
   }
 } else {
