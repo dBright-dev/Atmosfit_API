@@ -1,6 +1,6 @@
-const {getDatabase} = require('firebase-admin/database');
+const {getFirestore} = require('firebase-admin/firestore');
 
-const db = getDatabase();
+const db = getFirestore();
 
 async function sendMessage(chatId, senderId, text, productCard = null) {
   const messageRef = db.ref(`chats/${chatId}/messages`);

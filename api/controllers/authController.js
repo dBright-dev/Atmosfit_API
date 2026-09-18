@@ -1,7 +1,6 @@
-
-const admin = require('firebase-admin');
-
-const auth = admin.auth();
+// Modular Auth API
+const { getAuth } = require('firebase-admin/auth');
+const auth = getAuth();
 
 /**
  * Registers a new user with email and password.

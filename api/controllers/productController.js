@@ -1,6 +1,6 @@
-const {getDatabase} = require('firebase-admin/database');
+const {getFirestore} = require('firebase-admin/firestore');
 
-const db = getDatabase();
+const db = getFirestore();
 
 async function getRecommendedProducts(weather) {
   try {
