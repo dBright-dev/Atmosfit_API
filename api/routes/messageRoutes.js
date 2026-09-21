@@ -4,9 +4,11 @@ const express = require('express');
 const router = express.Router();
 
 const chatController = require('../controllers/messageController');
+const {verifyToken} = require('../middleware/authMiddleware');
 
 router.get(
     '/:chatId/messages',
+    verifyToken,
     async (req, res, next) => {
       try {
         const {chatId} = req.params;
@@ -21,6 +23,7 @@ router.get(
 
 router.post(
     '/:chatId/messages',
+    verifyToken,
     async (req, res, next) => {
       try {
         const {chatId} = req.params;

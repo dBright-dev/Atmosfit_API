@@ -1,9 +1,10 @@
 // Modular Auth API
 const { getAuth } = require('firebase-admin/auth');
-
+const { getFirestore } = require('firebase-admin/firestore');
 
 /**
  * Registers a new user with email and password.
+ * Also initializes their profile in Firestore.
  * @param {string} email - The user's email address.
  * @param {string} password - The user's chosen password.
  * @param {string} displayName - The user's display name.
@@ -11,7 +12,9 @@ const { getAuth } = require('firebase-admin/auth');
  */
 async function registerUser(email, password, displayName) {
   const auth = getAuth();
+  const db = getFirestore();
   try {
+    // 1. Create the user in Firebase Auth
     const userRecord = await auth.createUser({
       email,
       password,
@@ -19,8 +22,23 @@ async function registerUser(email, password, displayName) {
       emailVerified: false,
     });
 
+    // 2. Set default roles/claims
     await auth.setCustomUserClaims(userRecord.uid, {
       role: 'user',
+    });
+
+    // 3. Initialize user document in Firestore (Moved logic from app to API)
+    await db.collection('users').doc(userRecord.uid).set({
+      uid: userRecord.uid,
+      email: userRecord.email,
+      displayName: userRecord.displayName,
+      photoURL: userRecord.photoURL || null,
+      createdAt: Date.now(),
+      preferences: {
+        themeMode: 'system',
+        temperatureUnit: 'celsius',
+        comfortCalibrator: 0.5,
+      },
     });
 
     const customToken = await auth.createCustomToken(userRecord.uid);
@@ -44,10 +62,29 @@ async function registerUser(email, password, displayName) {
 
 async function loginUser(idToken) {
   const auth = getAuth();
+  const db = getFirestore();
   try {
     const decodedToken = await auth.verifyIdToken(idToken);
-
     const userRecord = await auth.getUser(decodedToken.uid);
+
+    // Ensure user document exists in Firestore (standard for Google Sign-In)
+    const userDocRef = db.collection('users').doc(userRecord.uid);
+    const userDoc = await userDocRef.get();
+
+    if (!userDoc.exists) {
+      await userDocRef.set({
+        uid: userRecord.uid,
+        email: userRecord.email,
+        displayName: userRecord.displayName,
+        photoURL: userRecord.photoURL || null,
+        createdAt: Date.now(),
+        preferences: {
+          themeMode: 'system',
+          temperatureUnit: 'celsius',
+          comfortCalibrator: 0.5,
+        },
+      });
+    }
 
     return {
       uid: userRecord.uid,

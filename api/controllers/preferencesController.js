@@ -62,7 +62,7 @@ async function updateUserPreferences(userId, preferences) {
 
     // const prefsRef = db.ref(`userPreferences/${userId}`);
 
-    await db.collection('user').doc(userId).set(
+    await db.collection('users').doc(userId).set(
         {preferences: validated},
         {merge: true},
     );

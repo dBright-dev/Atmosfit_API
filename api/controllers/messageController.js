@@ -1,6 +1,6 @@
-const {getFirestore} = require('firebase-admin/firestore');
+const {getDatabase} = require('firebase-admin/database');
 
-const db = getFirestore();
+const db = getDatabase();
 
 async function sendMessage(chatId, senderId, text, productCard = null) {
   const messageRef = db.ref(`chats/${chatId}/messages`);
@@ -21,7 +21,7 @@ async function sendMessage(chatId, senderId, text, productCard = null) {
 }
 
 async function getMessages(chatId) {
-  const messageRef = db.ref(`chats/${chatId}/message`);
+  const messageRef = db.ref(`chats/${chatId}/messages`);
 
   const snapshot = await messageRef
       .orderByChild('timestamp')

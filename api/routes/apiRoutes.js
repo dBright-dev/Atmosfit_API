@@ -22,7 +22,7 @@ router.get(
     });
 
 router.put(
-    '/users/:userId/perefernces',
+    '/users/:userId/preferences',
     verifyToken,
     async (req, res, next) => {
       try {

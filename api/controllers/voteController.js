@@ -1,6 +1,6 @@
-const {getFirestore} = require('firebase-admin/firestore');
+const {getDatabase} = require('firebase-admin/database');
 
-const db = getFirestore();
+const db = getDatabase();
 
 async function voteOnMessage(chatId, messageId, userId, vote) {
   if (vote !== 'slay' && vote != 'nay') {
