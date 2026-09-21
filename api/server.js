@@ -73,8 +73,6 @@ if (getApps().length === 0) {
 const dbFirestore = getFirestore(firebaseApp);
 const dbRealtime = getDatabase(firebaseApp);
 const auth = getAuth(firebaseApp);
-const path = require('path');
-const adminRoutes = require('./routes/adminRoutes');
 
 // --- EXPRESS APP SETUP ---
 const app = express();
@@ -100,11 +98,13 @@ const cartRoutes = require('./routes/cartRoutes');
 const preferencesRoutes = require('./routes/preferencesRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const voteRoutes = require('./routes/voteRoutes');
-const wardrobeRoutes = require('./routes/wardrobeRoutes')
+const wardrobeRoutes = require('./routes/wardrobeRoutes');
+const productRoutes = require('./routes/productRoutes');
+const chatListRoutes = require('./routes/chatListRoutes');
+const userRoutes = require('./routes/userRoutes');
 
-app.use('/admin', express.static(path.join(__dirname, 'public', 'admin')));
 // Basic API routes (products, user-specific prefs)
-app.use('/api/v1/admin', apiV1Routes);
+app.use('/api/v1', apiV1Routes);
 
 // Auth routes (matches ApiService.kt @POST("api/auth/register"))
 app.use('/api/auth', authRoutes);
@@ -119,7 +119,9 @@ app.use('/api/v1/preferences', preferencesRoutes);
 
 app.use('api/v1', wardrobeRoutes);
 
-app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/products', productRoutes);
+app.use('/api/chats', chatListRoutes);
+app.use('/api/v1/users', userRoutes);
 
 app.get('/', (req, res) => {
   res.send('AtmosFit API is running!');
