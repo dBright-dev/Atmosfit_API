@@ -93,7 +93,28 @@ app.use((req, res, next) => {
 
 // --- ROUTES ---
 const apiV1Routes = require('./routes/apiRoutes');
+const authRoutes = require('./routes/authRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const preferencesRoutes = require('./routes/preferencesRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+const voteRoutes = require('./routes/voteRoutes');
+const wardrobeRoutes = require('./routes/wardrobeRoutes')
+
+// Basic API routes (products, user-specific prefs)
 app.use('/api/v1', apiV1Routes);
+
+// Auth routes (matches ApiService.kt @POST("api/auth/register"))
+app.use('/api/auth', authRoutes);
+
+// Consolidated Chat-related routes (Messages, Cart, Voting)
+app.use('/api/v1/chats', messageRoutes);
+app.use('/api/v1/chats', cartRoutes);
+app.use('/api/v1/chats', voteRoutes);
+
+// Global Preferences routes
+app.use('/api/v1/preferences', preferencesRoutes);
+
+app.use('api/v1', wardrobeRoutes);
 
 app.get('/', (req, res) => {
   res.send('AtmosFit API is running!');
