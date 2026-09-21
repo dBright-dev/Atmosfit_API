@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AtmosFit Admin</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; }
+    body { margin: 0; background: #F5F7FA; color: #1A1A2E; }
+    header { background: #005F5F; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { margin: 0; font-size: 20px; }
+    header button { background: rgba(255,255,255,0.15); border: 0; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+    main { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 24px; }
+    h2 { margin-top: 0; color: #005F5F; font-size: 18px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 4px; }
+    input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #DEE2E6; border-radius: 6px; font-size: 14px; }
+    button.primary { background: #005F5F; color: white; border: 0; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 16px; }
+    button.primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #EEE; font-size: 14px; }
+    th { color: #6C757D; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+    td img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; }
+    .actions button { margin-right: 6px; border: 0; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+    .edit { background: #E7F5FF; color: #005F5F; }
+    .delete { background: #FFE3E3; color: #C92A2A; }
+    .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 6px; color: white; opacity: 0; transition: opacity 0.3s; z-index: 999; }
+    .toast.show { opacity: 1; }
+    .toast.success { background: #2F9E44; }
+    .toast.error { background: #C92A2A; }
+    #loginView, #adminView { display: none; }
+    #loginView.active, #adminView.active { display: block; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: #E7F5FF; color: #005F5F; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🛒 AtmosFit Admin</h1>
+  <button id="logoutBtn" style="display:none">Log out</button>
+</header>
+
+<main>
+
+  <!-- LOGIN VIEW -->
+  <div id="loginView" class="card">
+    <h2>Sign in as Admin</h2>
+    <label>Email</label>
+    <input id="emailInput" type="email" placeholder="you@example.com" />
+    <label>Password</label>
+    <input id="passwordInput" type="password" placeholder="••••••••" />
+    <button class="primary" id="loginBtn">Sign In</button>
+  </div>
+
+  <!-- ADMIN VIEW -->
+  <div id="adminView">
+
+    <!-- Add / Edit Form -->
+    <div class="card">
+      <h2 id="formTitle">Add New Product</h2>
+      <input type="hidden" id="productId" />
+
+      <div class="grid2">
+        <div>
+          <label>Product Name</label>
+          <input id="productName" placeholder="Linen Cropped Jacket" />
+        </div>
+        <div>
+          <label>Price (R)</label>
+          <input id="price" type="number" step="0.01" placeholder="89.00" />
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label>Rating (0–5)</label>
+          <input id="rating" type="number" step="0.1" min="0" max="5" placeholder="4.5" />
+        </div>
+        <div>
+          <label>Stock</label>
+          <input id="stock" type="number" placeholder="10" />
+        </div>
+      </div>
+
+      <label>Image URL</label>
+      <input id="imageURL" placeholder="https://images.unsplash.com/..." />
+
+      <label>Weather Tag</label>
+      <select id="weatherTag">
+        <option value="RAINY_ESSENTIALS">RAINY_ESSENTIALS</option>
+        <option value="SUMMER_FITS">SUMMER_FITS</option>
+        <option value="WARM_LAYERS">WARM_LAYERS</option>
+        <option value="COLD_WEATHER">COLD_WEATHER</option>
+        <option value="ALL_SEASON">ALL_SEASON</option>
+      </select>
+
+      <button class="primary" id="saveBtn">Save Product</button>
+      <button class="primary" id="cancelBtn" style="background:#868E96; display:none">Cancel Edit</button>
+    </div>
+
+    <!-- Product List -->
+    <div class="card">
+      <h2>Products (<span id="productCount">0</span>)</h2>
+      <button class="primary" id="seedBtn" style="background:#1C7ED6;">Seed Demo Products</button>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Rating</th>
+            <th>Tag</th>
+            <th>Stock</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="productTableBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+</main>
+
+<div id="toast" class="toast"></div>
+
+<!-- Firebase JS SDK (v10 modular) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDp5xeZ7denxeA20UYX-fIHP_bcYCcbi8E",
+  authDomain: "chatapp-51d89.firebaseapp.com",
+  databaseURL: "https://chatapp-51d89-default-rtdb.firebaseio.com",
+  projectId: "chatapp-51d89",
+  storageBucket: "chatapp-51d89.firebasestorage.app",
+  messagingSenderId: "366298982014",
+  appId: "1:366298982014:web:ac26a57f15a977e489da2f",
+  measurementId: "G-QDHSDKJGL1"
+};
+  // ------------------------------------------------------------------
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // 🔗 Base URL of your backend
+  const API_BASE = `${window.location.origin}/api/v1/admin`;
+
+  // --- DOM refs ---
+  const loginView = document.getElementById('loginView');
+  const adminView = document.getElementById('adminView');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const toast = document.getElementById('toast');
+  const formTitle = document.getElementById('formTitle');
+  const saveBtn = document.getElementById('saveBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+
+  let currentIdToken = null;
+
+  // --- Toast helper ---
+  function showToast(msg, type = 'success') {
+    toast.textContent = msg;
+    toast.className = `toast ${type} show`;
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // --- API helper ---
+  async function apiCall(path, method = 'GET', body = null) {
+    if (!currentIdToken) throw new Error('Not authenticated');
+    const opts = {
+      method,
+      headers: {
+        'Authorization': `Bearer ${currentIdToken}`,
+        'Content-Type': 'application/json',
+      },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(`${API_BASE}${path}`, opts);
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+    return json.data;
+  }
+
+  // --- Auth state ---
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentIdToken = await user.getIdToken(true);
+      loginView.classList.remove('active');
+      adminView.classList.add('active');
+      logoutBtn.style.display = 'block';
+      loadProducts();
+    } else {
+      currentIdToken = null;
+      loginView.classList.add('active');
+      adminView.classList.remove('active');
+      logoutBtn.style.display = 'none';
+    }
+  });
+
+  // --- Login ---
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showToast('Signed in');
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  });
+
+  // --- Logout ---
+  logoutBtn.addEventListener('click', () => signOut(auth));
+
+  // --- Load Products ---
+  async function loadProducts() {
+    try {
+      const products = await apiCall('/products');
+      const tbody = document.getElementById('productTableBody');
+      document.getElementById('productCount').textContent = products.length;
+      tbody.innerHTML = '';
+      products.forEach(p => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><img src="${p.imageURL}" alt="${p.productName}" /></td>
+          <td>${p.productName}</td>
+          <td>R${Number(p.price).toFixed(2)}</td>
+          <td>${(p.rating ?? 0).toFixed(1)}</td>
+          <td><span class="badge">${p.weatherTag || '—'}</span></td>
+          <td>${p.stock ?? 0}</td>
+          <td class="actions">
+            <button class="edit" data-id="${p.id}">Edit</button>
+            <button class="delete" data-id="${p.id}">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      // Wire buttons
+      tbody.querySelectorAll('.edit').forEach(btn =>
+        btn.addEventListener('click', () => editProduct(products.find(x => x.id === btn.dataset.id)))
+      );
+      tbody.querySelectorAll('.delete').forEach(btn =>
+        btn.addEventListener('click', () => deleteProduct(btn.dataset.id))
+      );
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  }
+
+  // --- Save (create or update) ---
+  saveBtn.addEventListener('click', async () => {
+    const id = document.getElementById('productId').value;
+    const payload = {
+      productName: document.getElementById('productName').value.trim(),
+      price: parseFloat(document.getElementById('price').value),
+      rating: parseFloat(document.getElementById('rating').value) || 0,
+      stock: parseInt(document.getElementById('stock').value) || 0,
+      imageURL: document.getElementById('imageURL').value.trim(),
+      weatherTag: document.getElementById('weatherTag').value,
+    };
+
+    try {
+      if (id) {
+        await apiCall(`/products/${id}`, 'PUT', payload);
+        showToast('Product updated');
+      } else {
+        await apiCall('/products', 'POST', payload);
+        showToast('Product created');
+      }
+      resetForm();
+      loadProducts();
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  });
+
+  cancelBtn.addEventListener('click', resetForm);
+
+  function editProduct(product) {
+    document.getElementById('productId').value = product.id;
+    document.getElementById('productName').value = product.productName;
+    document.getElementById('price').value = product.price;
+    document.getElementById('rating').value = product.rating;
+    document.getElementById('stock').value = product.stock;
+    document.getElementById('imageURL').value = product.imageURL;
+    document.getElementById('weatherTag').value = product.weatherTag || 'ALL_SEASON';
+    formTitle.textContent = 'Edit Product';
+    saveBtn.textContent = 'Update Product';
+    cancelBtn.style.display = 'inline-block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm('Delete this product?')) return;
+    try {
+      await apiCall(`/products/${id}`, 'DELETE');
+      showToast('Deleted');
+      loadProducts();
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('productId').value = '';
+    ['productName','price','rating','stock','imageURL'].forEach(f =>
+      document.getElementById(f).value = ''
+    );
+    document.getElementById('weatherTag').value = 'ALL_SEASON';
+    formTitle.textContent = 'Add New Product';
+    saveBtn.textContent = 'Save Product';
+    cancelBtn.style.display = 'none';
+  }
+
+  // --- Seed ---
+  document.getElementById('seedBtn').addEventListener('click', async () => {
+    if (!confirm('Seed demo products? This only works if the products collection is empty.')) return;
+    try {
+      const result = await apiCall('/products/seed', 'POST');
+      showToast(`Seeded ${result.seeded} products`);
+      loadProducts();
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  });
+
+</script>
+</body>
+</html>

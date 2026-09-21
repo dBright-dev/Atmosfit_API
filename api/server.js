@@ -73,6 +73,8 @@ if (getApps().length === 0) {
 const dbFirestore = getFirestore(firebaseApp);
 const dbRealtime = getDatabase(firebaseApp);
 const auth = getAuth(firebaseApp);
+const path = require('path');
+const adminRoutes = require('./routes/adminRoutes');
 
 // --- EXPRESS APP SETUP ---
 const app = express();
@@ -115,6 +117,8 @@ app.use('/api/v1/chats', voteRoutes);
 app.use('/api/v1/preferences', preferencesRoutes);
 
 app.use('api/v1', wardrobeRoutes);
+
+app.use('/api/v1/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.send('AtmosFit API is running!');
