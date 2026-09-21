@@ -102,8 +102,9 @@ const messageRoutes = require('./routes/messageRoutes');
 const voteRoutes = require('./routes/voteRoutes');
 const wardrobeRoutes = require('./routes/wardrobeRoutes')
 
+app.use('/admin', express.static(path.join(__dirname, 'public', 'admin')));
 // Basic API routes (products, user-specific prefs)
-app.use('/api/v1', apiV1Routes);
+app.use('/api/v1/admin', apiV1Routes);
 
 // Auth routes (matches ApiService.kt @POST("api/auth/register"))
 app.use('/api/auth', authRoutes);
