@@ -103,6 +103,8 @@ const voteRoutes = require('./routes/voteRoutes');
 const wardrobeRoutes = require('./routes/wardrobeRoutes');
 const productRoutes = require('./routes/productRoutes');
 const chatListRoutes = require('./routes/chatListRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const sharedCartRoutes = require('./routes/sharedCartRoutes');
 const userRoutes = require('./routes/userRoutes');
 
 // Basic API routes (products, user-specific prefs)
@@ -126,6 +128,9 @@ app.use('api/v1', wardrobeRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/chats', chatListRoutes);
 app.use('/api/v1/users', userRoutes);
+
+app.use('/api/v1/cart', cartRoutes);  
+app.use('/api/chats', sharedCartRoutes); 
 
 app.use('/admin', express.static(path.join(__dirname, 'public', 'admin')));
 
