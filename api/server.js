@@ -1,6 +1,7 @@
 // backend/api/server.js
 
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 
@@ -94,6 +95,7 @@ app.use((req, res, next) => {
 // --- ROUTES ---
 const apiV1Routes = require('./routes/apiRoutes');
 const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes')
 const cartRoutes = require('./routes/cartRoutes');
 const preferencesRoutes = require('./routes/preferencesRoutes');
 const messageRoutes = require('./routes/messageRoutes');
@@ -109,6 +111,8 @@ app.use('/api/v1', apiV1Routes);
 // Auth routes (matches ApiService.kt @POST("api/auth/register"))
 app.use('/api/auth', authRoutes);
 
+app.use('/api/v1/admin', adminRoutes)
+
 // Consolidated Chat-related routes (Messages, Cart, Voting)
 app.use('/api/v1/chats', messageRoutes);
 app.use('/api/v1/chats', cartRoutes);
@@ -122,6 +126,12 @@ app.use('api/v1', wardrobeRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/chats', chatListRoutes);
 app.use('/api/v1/users', userRoutes);
+
+app.use('/admin', express.static(path.join(__dirname, 'public', 'admin')));
+
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
+});
 
 app.get('/', (req, res) => {
   res.send('AtmosFit API is running!');
