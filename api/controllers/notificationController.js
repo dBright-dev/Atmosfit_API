@@ -12,7 +12,7 @@ async function registerDevice(userId, token, platform = 'android') {
   }
 
   const db = getFirestore();
-  const tokenDocRef = db.collection('device_tokens').document(token);
+  const tokenDocRef = db.collection('device_tokens').doc(token);
 
   await tokenDocRef.set(
     {
@@ -34,7 +34,7 @@ async function unregisterDevice(token) {
   }
 
   const db = getFirestore();
-  await db.collection('device_tokens').document(token).delete();
+  await db.collection('device_tokens').doc(token).delete();
   return { unregistered: true };
 }
 
