@@ -115,10 +115,15 @@ app.use('/api/auth', authRoutes);
 
 app.use('/api/v1/admin', adminRoutes)
 
-// Consolidated Chat-related routes (Messages, Cart, Voting)
+// Consolidated Chat-related routes (Messages, Voting)
 app.use('/api/v1/chats', messageRoutes);
-app.use('/api/v1/chats', cartRoutes);
 app.use('/api/v1/chats', voteRoutes);
+
+// Cart routes: personal cart lives under /api/v1/cart, the shared cart is
+// owned by a chat and lives under /api/chats/:chatId/cart. Mounting cartRoutes
+// on /api/v1/chats used to shadow nothing but resolve every call as 404.
+app.use('/api/v1/cart', cartRoutes);
+app.use('/api/chats', sharedCartRoutes);
 
 // Global Preferences routes
 app.use('/api/v1/preferences', preferencesRoutes);
