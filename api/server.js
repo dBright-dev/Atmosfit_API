@@ -126,7 +126,7 @@ app.use('/api/v1/preferences', preferencesRoutes);
 // Notifications (FCM device registration, unregistration, test push)
 app.use('/api/v1/notifications', notificationRoutes);
 
-app.use('api/v1', wardrobeRoutes);
+app.use('/api/v1', wardrobeRoutes);
 
 app.use('/api/v1/products', productRoutes);
 app.use('/api/chats', chatListRoutes);
