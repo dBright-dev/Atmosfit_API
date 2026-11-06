@@ -105,6 +105,7 @@ const productRoutes = require('./routes/productRoutes');
 const chatListRoutes = require('./routes/chatListRoutes');
 const sharedCartRoutes = require('./routes/sharedCartRoutes');
 const userRoutes = require('./routes/userRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Basic API routes (products, user-specific prefs)
 app.use('/api/v1', apiV1Routes);
@@ -121,6 +122,9 @@ app.use('/api/v1/chats', voteRoutes);
 
 // Global Preferences routes
 app.use('/api/v1/preferences', preferencesRoutes);
+
+// Notifications (FCM device registration, unregistration, test push)
+app.use('/api/v1/notifications', notificationRoutes);
 
 app.use('api/v1', wardrobeRoutes);
 

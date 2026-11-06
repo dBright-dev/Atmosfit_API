@@ -2,9 +2,9 @@
   "name": "api",
   "version": "1.0.0",
   "description": "",
-  "main": "sever.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node api/server.js",
+    "start": "node server.js",
     "install:api": "cd api && npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
